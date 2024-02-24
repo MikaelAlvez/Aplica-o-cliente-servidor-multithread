@@ -1,18 +1,29 @@
 package PraticaOnline1;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.*;
 
 public class Anel {
+	private Map<Integer, List<Integer>> conexoes;
+
+    public Anel() {
+        this.conexoes = new HashMap<>();
+    }
+    
     static class Processo implements Runnable {
         private final int id;
         private final BlockingQueue<String> filaEntrada;
         private final BlockingQueue<String> filaSaida;
         private Processo proximo;
+		private int porta;
 
-        public Processo(int id, Processo proximo) {
+        public Processo(int id, int porta) {
             this.id = id;
+            this.porta = porta;
             this.filaEntrada = new LinkedBlockingQueue<>();
             this.filaSaida = new LinkedBlockingQueue<>();
             this.proximo = proximo;
@@ -41,7 +52,7 @@ public class Anel {
                     mensagem = filaSaida.poll(100, TimeUnit.MILLISECONDS);
                     if (mensagem != null) {
                         if (proximo != null) {
-                        	System.out.println("\nProcesso " + id + " enviou mensagem para processo " + proximo.proximo.proximo.id + ": " + mensagem);
+                        	System.out.println("\nMensagem recebida do processo " + id + ": " + mensagem);
                         }
                     }
                 } catch (InterruptedException e) {
@@ -49,15 +60,31 @@ public class Anel {
                 }
             }
         }
+
+		public int getPorta() {
+	        return porta;
+		}
+
+		public int getId() {
+	        return id;
+		}
     }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        Processo p1 = new Processo(1, null);
-        Processo p2 = new Processo(2, null);
-        Processo p3 = new Processo(3, null);
-        Processo p4 = new Processo(4, null);
+        Processo p1 = new Processo(1, 4096);
+        Processo p2 = new Processo(2, 4097);
+        Processo p3 = new Processo(3, 4098);
+        Processo p4 = new Processo(4, 4099);
+        
+        Processo[] processos = {p1, p2, p3, p4};
+        
+        for (Processo processo : processos) {
+            int id = processo.getId();
+            int porta = processo.getPorta();
+            System.out.println("Processo P" + id + " iniciado na Porta: " + porta);
+        }
 
         p1.proximo = p2;
         p2.proximo = p3;
@@ -69,8 +96,8 @@ public class Anel {
         executor.execute(p2);
         executor.execute(p3);
         executor.execute(p4);
-
-        System.out.println("Informe o ID do processo remetente:");
+        
+        System.out.println("\nInforme o ID do processo remetente:");
         int remetente = scanner.nextInt();
         scanner.nextLine();
 
@@ -85,19 +112,21 @@ public class Anel {
         Processo processoDestino = obterProcessoPorId(destino, p1);
         if (processoRemetente != null && processoDestino != null) {
             processoRemetente.enviarMensagem(mensagem);
-            while (processoRemetente != processoDestino) {
+            do {
                 processoRemetente = processoRemetente.proximo;
+                System.out.println("\nEnviando mensagem para processo " + processoRemetente.id);
+                		
                 if (processoRemetente != null) {
-                    System.out.println("\nEnviando mensagem para processo " + processoRemetente.id);
                     System.out.println("\nChegou no processo " + processoRemetente.id + "...");
                 } else {
                     System.out.println("\nProcesso remetente não encontrado.");
                     break;
                 }
-            }
+            } while (processoRemetente != processoDestino);
         } else {
             System.out.println("\nProcesso remetente ou destino não encontrado.");
         }
+
 
         try {
             Thread.sleep(1000);
@@ -109,7 +138,12 @@ public class Anel {
         scanner.close();
     }
 
-    private static Processo obterProcessoPorId(int id, Processo processo) {
+    private static String getPorta() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private static Processo obterProcessoPorId(int id, Processo processo) {
         Processo atual = processo;
         do {
             if (atual.id == id) {
@@ -119,4 +153,13 @@ public class Anel {
         } while (atual != processo);
         return null;
     }
+    
+    public void adicionarConexao(int processoA, int processoB) {
+        conexoes.computeIfAbsent(processoA, k -> new ArrayList<>()).add(processoB);
+        conexoes.computeIfAbsent(processoB, k -> new ArrayList<>()).add(processoA);
+    }
+    
+	public List<Integer> getConexoes(int remetente) {
+        return conexoes.getOrDefault(remetente, new ArrayList<>());
+	}
 }
