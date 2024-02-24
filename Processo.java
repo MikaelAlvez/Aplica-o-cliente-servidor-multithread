@@ -14,16 +14,16 @@ public class Processo {
 
     public void enviarMensagem(Processo destino, String mensagem) {
         System.out.println("Processo " + id + " enviando mensagem para processo " + destino.getId() + ": " + mensagem);
-        destino.receberMensagem(mensagem);
+        destino.receberMensagem(destino, mensagem);
     }
 
-    public void enviarMensagemBroadcast(String mensagem) {
+    public void enviarMensagemBroadcast(Processo destino, String mensagem) {
         System.out.println("Processo " + id + " enviando mensagem broadcast: " + mensagem);
-        proximo.receberMensagem(mensagem);
+        proximo.receberMensagem(destino, mensagem);
     }
 
-    public void receberMensagem(String mensagem) {
-        System.out.println("Processo " + id + " recebeu mensagem: " + mensagem);
+    public void receberMensagem(Processo destino, String mensagem) {
+        System.out.println("Processo " + destino.getId() + " recebeu mensagem do processo " + id + ": " + mensagem);
     }
 
     public int getId() {

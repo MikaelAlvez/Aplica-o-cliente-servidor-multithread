@@ -41,9 +41,8 @@ public class Anel {
                     mensagem = filaSaida.poll(100, TimeUnit.MILLISECONDS);
                     if (mensagem != null) {
                         if (proximo != null) {
-                            System.out.println("\nEnviando mensagem para " + proximo.id);
+                        	System.out.println("\nProcesso " + id + " enviou mensagem para processo " + proximo.proximo.proximo.id + ": " + mensagem);
                         }
-                        System.out.println("\nProcesso " + id + " enviou mensagem: " + mensagem);
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -89,6 +88,7 @@ public class Anel {
             while (processoRemetente != processoDestino) {
                 processoRemetente = processoRemetente.proximo;
                 if (processoRemetente != null) {
+                    System.out.println("\nEnviando mensagem para processo " + processoRemetente.id);
                     System.out.println("\nChegou no processo " + processoRemetente.id + "...");
                 } else {
                     System.out.println("\nProcesso remetente não encontrado.");
