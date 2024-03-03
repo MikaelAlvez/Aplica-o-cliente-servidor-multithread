@@ -3,28 +3,23 @@ package TopologiaEstrela;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Cliente {
+public class ServidorCentral {
+    private ServerSocket serverSocket;
     private Socket socket;
     private ObjectOutputStream output;
     private ObjectInputStream input;
 
-    public Cliente(String servidorHost, int porta) {
+    public ServidorCentral(int porta) {
         try {
-            socket = new Socket(servidorHost, porta);
+            serverSocket = new ServerSocket(porta);
+            System.out.println("Servidor aguardando conexões na porta: " + porta);
+            socket = serverSocket.accept();
             output = new ObjectOutputStream(socket.getOutputStream());
             input = new ObjectInputStream(socket.getInputStream());
-            System.out.println("Conectado ao servidor: " + servidorHost + ":" + porta);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void enviarMensagem(Mensagem mensagem) {
-        try {
-            output.writeObject(mensagem);
-            output.flush();
+            System.out.println("Conexão estabelecida com cliente: " + socket.getInetAddress());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -39,11 +34,21 @@ public class Cliente {
         }
     }
 
+    public void enviarMensagem(Mensagem mensagem) {
+        try {
+            output.writeObject(mensagem);
+            output.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void fecharConexao() {
         try {
             output.close();
             input.close();
             socket.close();
+            serverSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
