@@ -5,6 +5,7 @@ public class ClienteServidor {
 	Servidor servidor;
 	
 	public ClienteServidor(String processo, int endereco, int porta) {
+		
 		this.cliente = new Cliente(processo, "localhost", porta);
 		Thread threadCliente = new Thread(this.cliente);
 		threadCliente.start();

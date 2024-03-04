@@ -36,34 +36,35 @@ public class ImpServidor implements Runnable {
 
 			mensagemEncaminhada = (Mensagem) this.objEnt.readObject();
 
-			System.out.println(this.processo + " conectado à " + mensagemEncaminhada.getConteudo() + " por " + socketCliente.getInetAddress().getHostName() + ": " + socketCliente.getInetAddress().getHostAddress());
+			System.out.println(this.processo + " conectado à " + mensagemEncaminhada.getMensagem() + " por " + socketCliente.getInetAddress().getHostName() + ": " + socketCliente.getInetAddress().getHostAddress());
 			objSai.writeObject(new Mensagem(this.processo, null, this.processo, "unicast"));
 
 			while (conexao) {
 				mensagemEncaminhada = (Mensagem) objEnt.readObject();
 
-				if (mensagemEncaminhada.getTipo().equals("broadcast") || mensagemEncaminhada.getTipo().equals("Broadcast")) {
-					if (mensagemEncaminhada.getConteudo().equalsIgnoreCase("Sair") || mensagemEncaminhada.getConteudo().equalsIgnoreCase("Encerrar"))
-						conexao = false;
-					else if (!this.processo.equals(mensagemEncaminhada.getEmissor())) {
-						System.out.println("\nMensagem recebida " + mensagemEncaminhada);
-						encaminharMensagem(mensagemEncaminhada);
-					}
-				}
-
-				if (mensagemEncaminhada.getTipo().equals("unicast") || mensagemEncaminhada.getTipo().equals("Unicast")) {
+				if (mensagemEncaminhada.getOperacao().equals("unicast") || mensagemEncaminhada.getOperacao().equals("Unicast")) {
 					if (mensagemEncaminhada.getDestinatario() != null && mensagemEncaminhada.getDestinatario().equals(this.processo)) {
-						if (mensagemEncaminhada.getConteudo().equalsIgnoreCase("Sair") || mensagemEncaminhada.getConteudo().equalsIgnoreCase("Encerrar")) {
+						if (mensagemEncaminhada.getMensagem().equalsIgnoreCase("Sair") || mensagemEncaminhada.getMensagem().equalsIgnoreCase("Encerrar")) {
 							conexao = false;
 						} else {
 							System.out.println("\nMensagem recebida " + mensagemEncaminhada);
 						}
-					} else if (!this.processo.equals(mensagemEncaminhada.getEmissor())) {
+					} else if (!this.processo.equals(mensagemEncaminhada.getRemetente())) {
 						encaminharMensagem(mensagemEncaminhada);
 					} else {
 						System.out.println("Destinatario informado não encontrado!"); 
 					}
 				}
+				
+				if (mensagemEncaminhada.getOperacao().equals("broadcast") || mensagemEncaminhada.getOperacao().equals("Broadcast")) {
+					if (mensagemEncaminhada.getMensagem().equalsIgnoreCase("Sair") || mensagemEncaminhada.getMensagem().equalsIgnoreCase("Encerrar"))
+						conexao = false;
+					else if (!this.processo.equals(mensagemEncaminhada.getRemetente())) {
+						System.out.println("\nMensagem recebida " + mensagemEncaminhada);
+						encaminharMensagem(mensagemEncaminhada);
+					}
+				}
+
 			}
 			
 			objEnt.close();
@@ -80,7 +81,7 @@ public class ImpServidor implements Runnable {
 	}
 
 	private void encaminharMensagem(Mensagem mensagemRecebida) {
-		System.out.println("\n" + this.processo + " encaminhando mensagem de " + mensagemRecebida.getEmissor() + " com destino " + mensagemRecebida.getDestinatario());
+		System.out.println("\n" + this.processo + " encaminhando mensagem de " + mensagemRecebida.getRemetente() + " com destino " + mensagemRecebida.getDestinatario());
 		ObjectOutputStream outPut = cliente.getObjectOutputStream();
 		try {
 			outPut.writeObject(mensagemRecebida);

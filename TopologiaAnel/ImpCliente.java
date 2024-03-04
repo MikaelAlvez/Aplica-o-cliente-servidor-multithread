@@ -31,7 +31,7 @@ public class ImpCliente implements Runnable {
             
             Mensagem serverNome = (Mensagem) this.objEnt.readObject();
             
-            System.out.println(this.processo + " está conectado ao servidor " + serverNome.getEmissor());
+            System.out.println(this.processo + " está conectado ao servidor " + serverNome.getRemetente());
             
             Scanner operacao = new Scanner(System.in);
             Mensagem mensagem = null;
@@ -51,11 +51,11 @@ public class ImpCliente implements Runnable {
                 }
                 
                 mensagemEncaminhada = mensagem;
-                
-                if (mensagem.getConteudo().equalsIgnoreCase("Sair") || mensagem.getConteudo().equalsIgnoreCase("Encerrar")) {
+                // Envia a mensagem para o servidor
+                if (mensagem.getMensagem().equalsIgnoreCase("Sair") || mensagem.getMensagem().equalsIgnoreCase("Encerrar")) {
                     conexao = false;
                 }else {
-                    System.out.println("\n" + mensagem.getEmissor() + " enviando mensagem para " + mensagem.getDestinatario() + "...");
+                    System.out.println("\n" + mensagem.getRemetente() + " enviando mensagem para " + mensagem.getDestinatario() + "...");
                 this.objSai.writeObject(mensagem);
                 }
             }
@@ -82,17 +82,18 @@ public class ImpCliente implements Runnable {
         return this.mensagemEncaminhada;
     }
     
-    private Mensagem construirMensagem(String tipo, Scanner in) {
-        String emissor = this.processo;
+    private Mensagem construirMensagem(String operacao, Scanner entrada) {
+        String processo = this.processo;
         String destinatario;
-        if(tipo.equals("unicast")) {
+        
+        if(operacao.equals("unicast")) {
             System.out.println("Destinatário: ");
-            destinatario = in.nextLine();
+            destinatario = entrada.nextLine();
         } else {
             destinatario = "todos os processos";
         }
         System.out.println("Mensagem: ");
-        String conteudo = in.nextLine();
-        return new Mensagem(emissor, destinatario, conteudo, tipo);
+        String mensagem = entrada.nextLine();
+        return new Mensagem(processo, destinatario, mensagem, operacao);
     }
 }
